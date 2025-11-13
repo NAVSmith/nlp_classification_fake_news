@@ -206,3 +206,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Dataset files - ignore all CSV files in dataset folder
+dataset/*.csv
+data/processed/*.csv

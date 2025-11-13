@@ -1,5 +1,7 @@
 # Fake News Classification Project
 
+-- python version 3.11.9
+
 ## Project Overview
 
 This project focuses on building a text classification model to distinguish between real and fake news articles. Using natural language processing techniques and machine learning algorithms, we develop a classifier that can analyze news content and predict whether it's legitimate or fabricated.
