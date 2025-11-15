@@ -17,6 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 5.5. Download NLTK data during build (not at runtime)
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+# 5.6. Download spaCy model during build
+RUN python -m spacy download en_core_web_sm
 
 # 6. Copy your *entire* project into the container
 # This includes app.py, your .keras file (or model folder),

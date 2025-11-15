@@ -5,6 +5,7 @@ import numpy as np
 from flask import Flask, request, jsonify, render_template
 import traceback
 import nltk
+import spacy
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -27,30 +28,32 @@ CONFIG = {
 stemmer = PorterStemmer()
 stop_words = set(stopwords.words('english'))
 
-def standard_preprocess(text):
+def standard_preprocess(text_input):
     """Preprocess text to match training preprocessing."""
-    if pd.isna(text) or text == "":
+    if pd.isna(text_input) or text_input == "":
         return ""
     
-    text_str = str(text)
-    
-    # Remove news sources (case-insensitive)
-    text_str = re.sub(r'\(reuters\)|\(reuter\)|\(ap\)|\(afp\)', '', text_str, flags=re.IGNORECASE)
-    text_str = re.sub(r'\breuters\b', '', text_str, flags=re.IGNORECASE)
-    text_str = re.sub(r'\breuter\b', '', text_str, flags=re.IGNORECASE)
-    
-    # Remove caps+colon patterns at start
-    text_str = re.sub(r'^[A-Z]{5,}:\s*', '', text_str)
-    
-    text_str = text_str.lower()
-    text_str = re.sub(r'http\S+|www\S+|https\S+', '', text_str)
-    text_str = re.sub(r'\S+@\S+', '', text_str)
-    text_str = re.sub(r'\s+', ' ', text_str)
+# Convert to string and lowercase
+    text = str(text_input).lower()
+    # Remove URLs
+    text = re.sub(r'http\S+|www\S+|https\S+', '', text)
+    # Remove the word 'reuters' if it appears in side () breakets
+    text = re.sub(r'\(reuters\)', '', text)
+    # Remove the word '[VIDEO]' if it appears in side [] breakets
+    text = re.sub(r'\[video\]', '', text)
+    # Remove email addresses
+    text = re.sub(r'\S+@\S+', '', text)
+    # Remove extra whitespace and newlines
+    text = re.sub(r'\s+', ' ', text)
+    # Remove non-alphabetic characters but keep spaces
+    text = re.sub(r'[^a-z\s]', '', text)
+    # Strip leading/trailing whitespace
+    text = text.strip()
     
     try:
-        tokens = word_tokenize(text_str)
+        tokens = word_tokenize(text)
     except:
-        tokens = text_str.split()
+        tokens = text.split()
     
     tokens = [token for token in tokens if token.lower() not in stop_words]
     tokens = [stemmer.stem(token) for token in tokens]
