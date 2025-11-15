@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Fake News Classifier</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                display: grid;
+                place-items: center;
+                min-height: 90vh;
+                background-color: #f4f7f6;
+                color: #333;
+                padding: 20px;
+            }
+            .container {
+                background: #ffffff;
+                padding: 2rem 3rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                text-align: center;
+                max-width: 800px;
+                width: 100%;
+            }
+            h1 {
+                color: #2c3e50;
+                margin-bottom: 0.5rem;
+            }
+            p {
+                color: #434444;
+                margin-top: 0;
+                font-size: 1.0rem;
+            }
+            form {
+                margin-top: 2.5rem;
+                text-align: left;
+            }
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+            input[type="text"], textarea {
+                width: 100%;
+                padding: 0.8rem;
+                font-size: 1rem;
+                border: 2px solid #ddd;
+                border-radius: 6px;
+                transition: border-color 0.3s;
+                font-family: inherit;
+                box-sizing: border-box;
+            }
+            textarea {
+                min-height: 150px;
+                resize: vertical;
+            }
+            input[type="text"]:focus, textarea:focus {
+                border-color: #3498db;
+                outline: none;
+            }
+            button {
+                margin-top: 1rem;
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+                font-weight: bold;
+                color: #fff;
+                background-color: #3498db;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+                width: 100%;
+            }
+            button:hover {
+                background-color: #2980b9;
+            }
+            button:disabled {
+                background-color: #95a5a6;
+                cursor: not-allowed;
+            }
+            .results {
+                margin-top: 2rem;
+                padding: 1.5rem;
+                border-radius: 8px;
+                display: none;
+            }
+            .results.show {
+                display: block;
+            }
+            .results.fake {
+                background-color: #fee;
+                border: 2px solid #fcc;
+            }
+            .results.real {
+                background-color: #efe;
+                border: 2px solid #cfc;
+            }
+            .prediction {
+                font-size: 1.5rem;
+                font-weight: bold;
+                margin-bottom: 1rem;
+            }
+            .prediction.fake {
+                color: #c0392b;
+            }
+            .prediction.real {
+                color: #27ae60;
+            }
+            .confidence {
+                font-size: 1.2rem;
+                margin-bottom: 0.5rem;
+            }
+            .probabilities {
+                margin-top: 1rem;
+                font-size: 0.9rem;
+            }
+            .prob-bar {
+                height: 20px;
+                background-color: #ecf0f1;
+                border-radius: 10px;
+                margin: 0.5rem 0;
+                overflow: hidden;
+            }
+            .prob-fill {
+                height: 100%;
+                transition: width 0.3s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 0.85rem;
+            }
+            .prob-fill.fake {
+                background-color: #e74c3c;
+            }
+            .prob-fill.real {
+                background-color: #27ae60;
+            }
+            .error {
+                background-color: #fee;
+                border: 2px solid #fcc;
+                color: #c0392b;
+                padding: 1rem;
+                border-radius: 8px;
+                margin-top: 1rem;
+                display: none;
+            }
+            .error.show {
+                display: block;
+            }
+            .loading {
+                display: none;
+                text-align: center;
+                margin-top: 1rem;
+            }
+            .loading.show {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Fake News Classifier</h1>
+            <p>Enter a news article title and body text to check if it's likely to be real or fake news.</p>
+            
+            <form id="newsForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="title_input">News Title:</label>
+                    <input type="text" id="title_input" name="title" placeholder="Enter the news article title..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="text_input">News Body:</label>
+                    <textarea id="text_input" name="text" placeholder="Enter the news article body text..." required></textarea>
+                </div>
+                
+                <button type="submit" id="predictBtn">Predict</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <p>Analyzing article...</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="results" id="results">
+                <div class="prediction" id="prediction"></div>
+                <div class="confidence" id="confidence"></div>
+                <div class="probabilities">
+                    <p><strong>Probability Breakdown:</strong></p>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>Fake News:</span>
+                            <span id="fakeProb">0%</span>
+                        </div>
+                        <div class="prob-bar">
+                            <div class="prob-fill fake" id="fakeBar" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>Real News:</span>
+                            <span id="realProb">0%</span>
+                        </div>
+                        <div class="prob-bar">
+                            <div class="prob-fill real" id="realBar" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <small>By Nadav Smith & Jose Osorno with help of several, resourceful and sweet IA clients.</small>
+        
+        <script>
+            function handleSubmit(event) {
+                event.preventDefault();
+                
+                const form = document.getElementById('newsForm');
+                const results = document.getElementById('results');
+                const error = document.getElementById('error');
+                const loading = document.getElementById('loading');
+                const predictBtn = document.getElementById('predictBtn');
+                
+                // Hide previous results and errors
+                results.classList.remove('show', 'fake', 'real');
+                error.classList.remove('show');
+                loading.classList.add('show');
+                predictBtn.disabled = true;
+                
+                const formData = new FormData(form);
+                
+                fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.classList.remove('show');
+                    predictBtn.disabled = false;
+                    
+                    if (data.error) {
+                        error.textContent = 'Error: ' + data.error;
+                        error.classList.add('show');
+                        return;
+                    }
+                    
+                    // Display results
+                    const prediction = data.predicted_class;
+                    const confidence = (data.confidence * 100).toFixed(1);
+                    const fakeProb = (data.probabilities.Fake * 100).toFixed(1);
+                    const realProb = (data.probabilities.Real * 100).toFixed(1);
+                    
+                    document.getElementById('prediction').textContent = `Prediction: ${prediction} News`;
+                    document.getElementById('prediction').className = `prediction ${prediction.toLowerCase()}`;
+                    document.getElementById('confidence').textContent = `Confidence: ${confidence}%`;
+                    
+                    document.getElementById('fakeProb').textContent = `${fakeProb}%`;
+                    document.getElementById('realProb').textContent = `${realProb}%`;
+                    document.getElementById('fakeBar').style.width = `${fakeProb}%`;
+                    document.getElementById('fakeBar').textContent = `${fakeProb}%`;
+                    document.getElementById('realBar').style.width = `${realProb}%`;
+                    document.getElementById('realBar').textContent = `${realProb}%`;
+                    
+                    results.classList.add('show', prediction.toLowerCase());
+                })
+                .catch(error => {
+                    loading.classList.remove('show');
+                    predictBtn.disabled = false;
+                    document.getElementById('error').textContent = 'Error: ' + error.message;
+                    document.getElementById('error').classList.add('show');
+                });
+            }
+        </script>
+    </body>
+</html>
