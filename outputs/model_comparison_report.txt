@@ -1,0 +1,59 @@
+MODEL COMPARISON TEST - FINAL EVALUATION REPORT
+======================================================================
+Generated: 2025-11-15 15:22:28
+
+DATASET INFORMATION
+----------------------------------------------------------------------
+Total Samples: 4,954
+Predictions File: dataset/validation_data.csv
+Ground Truth File: dataset/validation_data_with_labels.csv
+
+OVERALL PERFORMANCE
+----------------------------------------------------------------------
+Accuracy: 0.8835 (88.35%)
+
+PER-CLASS METRICS
+----------------------------------------------------------------------
+Class 'Fake' (0):
+  Precision: 0.9953
+  Recall:    0.8408
+  F1-Score:  0.9115
+
+Class 'Real' (1):
+  Precision: 0.7138
+  Recall:    0.9901
+  F1-Score:  0.8295
+
+MACRO AVERAGES
+----------------------------------------------------------------------
+Precision: 0.8545
+Recall:    0.9155
+F1-Score:  0.8705
+
+CONFUSION MATRIX
+----------------------------------------------------------------------
+                Predicted
+                Fake (0)  Real (1)
+Actual Fake (0)   2,973     563
+      Real (1)        14   1,404
+
+ERROR ANALYSIS
+----------------------------------------------------------------------
+Total Misclassified: 577 (11.65%)
+False Positives (Predicted Real, Actually Fake): 563
+False Negatives (Predicted Fake, Actually Real):   14
+
+CLASSIFICATION REPORT
+----------------------------------------------------------------------
+              precision    recall  f1-score   support
+
+    Fake (0)       1.00      0.84      0.91      3536
+    Real (1)       0.71      0.99      0.83      1418
+
+    accuracy                           0.88      4954
+   macro avg       0.85      0.92      0.87      4954
+weighted avg       0.91      0.88      0.89      4954
+
+
+======================================================================
+END OF REPORT
