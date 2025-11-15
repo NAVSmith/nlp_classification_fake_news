@@ -210,3 +210,4 @@ __marimo__/
 # Dataset files - ignore all CSV files in dataset folder
 dataset/*.csv
 data/processed/*.csv
+outputs/validation_predictions.csv
